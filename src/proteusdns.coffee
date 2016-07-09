@@ -17,36 +17,47 @@
 # Author:
 #   gfjohnson
 
-ProteusDNS = require 'proteusdns'
+BCProtAPI = require 'bcprotapi'
 
 moduledesc = 'ProteusDNS'
 modulename = 'pdns'
 
 config =
-  url: "http://localhost"
+  host: localhost
   username: example
   password: example
+  ssl: false
 
-config.url = process.env.HUBOT_PROTEUSDNS_URL if process.env.HUBOT_PROTEUSDNS_URL
+config.ssl = true if process.env.HUBOT_PROTEUSDNS_SSL
+config.host = process.env.HUBOT_PROTEUSDNS_HOST if process.env.HUBOT_PROTEUSDNS_HOST
 config.username = process.env.HUBOT_PROTEUSDNS_USER if process.env.HUBOT_PROTEUSDNS_USER
 config.password = process.env.HUBOT_PROTEUSDNS_PASS if process.env.HUBOT_PROTEUSDNS_PASS
 
 unless config.username == "example"
-  pdns = new ProteusDNS config.url, config.username, config.password
+  papi = new BCProtAPI config
 
 searchByObjectTypes = (robot, msg, keyword) ->
 
-  # robot.logger.info "sq: sending virustotal request for #{url}"
-  pdns.searchByObjectTypes keyword, (err, res) ->
+  # robot.logger.info "searchByObjectTypes: sending request for #{keyword}"
+  papi.searchByObjectTypes keyword, (err, res) ->
     if err
       msgout = "#{moduledesc}: error"
       robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
       return robot.send {room: msg.envelope.user.name}, msgout
 
+    if res === null
+      msgout = "#{moduledesc}: no results for `#{keyword}`"
+      robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
+      return robot.send {room: msg.envelope.user.name}, msgout
+      
     r = []
     for o in res
-      r.push "#{o.name} - #{o.properties}" if o.type == 'IP4Network' or o.type == 'HostRecord' or o.type == 'AliasRecord'
-      r.push "#{o.properties}" if o.type == 'IP4Address' or o.type == 'MACAddress'
+      switch o.type
+        when 'HostRecord'  then r.push "#{o.absoluteName} - #{o.addresses}"
+        when 'AliasRecord' then r.push "#{o.name} - #{o.properties}"
+        when 'IP4Network'  then r.push "#{o.CIDR} - #{o.name}"
+        when 'IP4Address'  then r.push "#{o.address} - #{o.state} - #{o.macAddress}"
+        when 'MACAddress'  then r.push "#{o.properties}"
     out = r.join "\n"
 
     msgout = "#{moduledesc}: ```#{out}```"

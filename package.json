@@ -1,7 +1,7 @@
 {
   "name": "hubot-proteusdns",
   "description": "Hubot plugin to search Proteus DNS",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Glen Johnson <gsfjohnson@gmail.com>",
   "license": "MIT",
   "keywords": [
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "coffee-script": "~1.7"
-    ,"proteusdns": "~0.0"
+    ,"bcprotapi": "git+ssh://github.alaska.edu/gfjohnson/node-bcprotapi.git#master"
   },
   "devDependencies": {
     "mocha": "*",
