@@ -44,8 +44,8 @@ searchByObjectTypes = (robot, msg, keyword) ->
   papi.searchByObjectTypes keyword, (err, res) ->
     if err
       msgout = "#{moduledesc}: error"
-      robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
-      return robot.send {room: msg.envelope.user.name}, msgout
+      robot.logger.info "#{msgout} (#{err}) [#{msg.envelope.user.name}]"
+      return robot.send {room: msg.envelope.user.name}, "#{msgout}, check hubot log for details"
 
     if res is null
       msgout = "#{moduledesc}: no results for `#{keyword}`"
