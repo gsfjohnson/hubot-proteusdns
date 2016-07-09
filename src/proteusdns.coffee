@@ -1,3 +1,5 @@
+# coffeelint: disable=max_line_length
+#
 # Description:
 #   Interact with Proteus DNS.
 #
@@ -45,7 +47,7 @@ searchByObjectTypes = (robot, msg, keyword) ->
       robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
       return robot.send {room: msg.envelope.user.name}, msgout
 
-    if res === null
+    if res is null
       msgout = "#{moduledesc}: no results for `#{keyword}`"
       robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
       return robot.send {room: msg.envelope.user.name}, msgout
