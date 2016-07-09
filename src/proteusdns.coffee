@@ -60,6 +60,7 @@ searchByObjectTypes = (robot, msg, keyword) ->
         when 'IP4Network'  then r.push "#{o.CIDR} - #{o.name}"
         when 'IP4Address'  then r.push "#{o.address} - #{o.state} - #{o.macAddress}"
         when 'MACAddress'  then r.push "#{o.properties}"
+        when 'NAPTRRecord' then r.push "#{o.properties}"
     out = r.join "\n"
 
     msgout = "#{moduledesc}: `#{res.length} results`\n```#{out}```"
