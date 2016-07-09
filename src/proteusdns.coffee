@@ -25,9 +25,9 @@ moduledesc = 'ProteusDNS'
 modulename = 'pdns'
 
 config =
-  host: localhost
-  username: example
-  password: example
+  host: 'localhost'
+  username: 'example'
+  password: 'example'
   ssl: false
 
 config.ssl = true if process.env.HUBOT_PROTEUSDNS_SSL
