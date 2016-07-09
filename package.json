@@ -1,7 +1,7 @@
 {
   "name": "hubot-proteusdns",
   "description": "Hubot plugin to search Proteus DNS",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "author": "Glen Johnson <gsfjohnson@gmail.com>",
   "license": "MIT",
   "keywords": [

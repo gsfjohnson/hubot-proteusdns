@@ -62,7 +62,7 @@ searchByObjectTypes = (robot, msg, keyword) ->
         when 'MACAddress'  then r.push "#{o.properties}"
     out = r.join "\n"
 
-    msgout = "#{moduledesc}: ```#{out}```"
+    msgout = "#{moduledesc}: (#{res.length} results)\n```#{out}```"
     robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
     return robot.send {room: msg.envelope.user.name}, msgout
 
