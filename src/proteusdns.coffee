@@ -62,7 +62,7 @@ searchByObjectTypes = (robot, msg, keyword) ->
         when 'MACAddress'  then r.push "#{o.properties}"
     out = r.join "\n"
 
-    msgout = "#{moduledesc}: (#{res.length} results)\n```#{out}```"
+    msgout = "#{moduledesc}: `#{res.length} results`\n```#{out}```"
     robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
     return robot.send {room: msg.envelope.user.name}, msgout
 
@@ -81,7 +81,7 @@ module.exports = (robot) ->
 
     robot.send {room: msg.message?.user?.name}, cmds.join "\n"
 
-  robot.respond /pdns search (.+)$/i, (msg) ->
+  robot.respond /pdns s(?:earch)? (.+)$/i, (msg) ->
     keyword = msg.match[1]
 
     robot.logger.info "#{moduledesc}: keyword search: #{keyword} [#{msg.envelope.user.name}]"
