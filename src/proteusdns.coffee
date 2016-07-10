@@ -50,7 +50,7 @@ searchByObjectTypes = (robot, msg, keyword) ->
     if res is null
       msgout = "#{moduledesc}: no results for `#{keyword}`"
       robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
-      return robot.send {room: msg.envelope.user.name}, msgout
+      return msg.reply msgout
       
     r = []
     for o in res
@@ -65,7 +65,7 @@ searchByObjectTypes = (robot, msg, keyword) ->
 
     msgout = "#{moduledesc}: `#{res.length} results`\n```#{out}```"
     robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
-    return robot.send {room: msg.envelope.user.name}, msgout
+    return msg.reply msgout
 
 
 module.exports = (robot) ->
