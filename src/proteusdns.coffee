@@ -1,7 +1,7 @@
 # coffeelint: disable=max_line_length
 #
 # Description:
-#   Interact with Proteus DNS.
+#   Interact with Proteus API.
 #
 # Dependencies:
 #   proteusdns
@@ -13,7 +13,7 @@
 #   HUBOT_BCPROTAPI_SSL [optional] - use ssl
 #
 # Commands:
-#   hubot pdns help - proteus dns commands
+#   hubot papi help - proteus api commands
 #
 # Notes:
 #
@@ -22,8 +22,8 @@
 
 papi = require 'bcprotapi'
 
-moduledesc = 'ProteusDNS'
-modulename = 'pdns'
+moduledesc = 'ProteusAPI'
+modulename = 'papi'
 
 config =
   host: 'localhost'
@@ -41,10 +41,10 @@ config.password = process.env.HUBOT_BCPROTAPI_PASS if process.env.HUBOT_BCPROTAP
 unless config.username == "example"
   papi.connect config
 
-searchByObjectTypes = (robot, msg, keyword) ->
+searchByObjectTypes = (robot, msg, args) ->
 
   # robot.logger.info "searchByObjectTypes: sending request for #{keyword}"
-  papi.searchByObjectTypes keyword, (err, res) ->
+  papi.searchByObjectTypes args, (err, res) ->
     if err
       if config.iteration < 1 and err is 'Error: env:Server: Not logged in'
         msgout = "#{moduledesc}: connection timeout, attempting reconnect"
@@ -52,7 +52,7 @@ searchByObjectTypes = (robot, msg, keyword) ->
         robot.send {room: msg.envelope.user.name}, msgout
         papi.connect config, (err, res) ->
           config.iteration += 1
-          return searchByObjectTypes robot, msg, keyword
+          return searchByObjectTypes robot, msg, args
         return
       msgout = "#{moduledesc}: error"
       robot.logger.info "#{msgout} (#{err}) [#{msg.envelope.user.name}]"
@@ -61,7 +61,7 @@ searchByObjectTypes = (robot, msg, keyword) ->
     config.iteration = 0
 
     if res is null
-      msgout = "#{moduledesc}: no results for `#{keyword}`"
+      msgout = "#{moduledesc}: no searchByObjectTypes results for `#{JSON.stringify(args)}`"
       robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
       return msg.reply msgout
       
@@ -76,17 +76,20 @@ searchByObjectTypes = (robot, msg, keyword) ->
         when 'NAPTRRecord' then r.push "#{o.properties}"
     out = r.join "\n"
 
-    msgout = "#{moduledesc}: `#{res.length} results`\n```#{out}```"
+    msgout = "#{moduledesc}: `#{res.length} results` ```#{out}```"
     robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
     return msg.reply msgout
 
 
 module.exports = (robot) ->
 
-  robot.respond /pdns help$/, (msg) ->
+  robot.respond /papi help$/, (msg) ->
     cmds = []
     arr = [
       "#{modulename} search <keyword> - search database"
+      "#{modulename} IP4Address <keyword> - search IP4Address objects only"
+      "#{modulename} IP4Network <keyword> - search IP4Network objects only"
+      "#{modulename} HostRecord <keyword> - search HostRecord objects only"
     ]
 
     for str in arr
@@ -95,9 +98,44 @@ module.exports = (robot) ->
 
     robot.send {room: msg.message?.user?.name}, cmds.join "\n"
 
-  robot.respond /pdns s(?:earch)? (.+)$/i, (msg) ->
+  robot.respond /papi s(?:earch)? (.+)$/i, (msg) ->
     keyword = msg.match[1]
 
     robot.logger.info "#{moduledesc}: keyword search: #{keyword} [#{msg.envelope.user.name}]"
 
-    return searchByObjectTypes robot, msg, keyword
+    args =
+      keyword: keyword
+    return searchByObjectTypes robot, msg, args
+
+  robot.respond /papi IP4A(?:ddress)? (.+)$/i, (msg) ->
+    keyword = msg.match[1]
+    type = 'IP4Address'
+
+    robot.logger.info "#{moduledesc}: keyword search for #{type}: #{keyword} [#{msg.envelope.user.name}]"
+
+    args =
+      keyword: keyword
+      types: type
+    return searchByObjectTypes robot, msg, args
+
+  robot.respond /papi IP4N(?:etwork)? (.+)$/i, (msg) ->
+    keyword = msg.match[1]
+    type = 'IP4Network'
+
+    robot.logger.info "#{moduledesc}: keyword search for #{type}: #{keyword} [#{msg.envelope.user.name}]"
+
+    args =
+      keyword: keyword
+      types: type
+    return searchByObjectTypes robot, msg, args
+
+  robot.respond /papi Host(?:Record)? (.+)$/i, (msg) ->
+    keyword = msg.match[1]
+    type = 'HostRecord'
+
+    robot.logger.info "#{moduledesc}: keyword search for #{type}: #{keyword} [#{msg.envelope.user.name}]"
+
+    args =
+      keyword: keyword
+      types: type
+    return searchByObjectTypes robot, msg, args
