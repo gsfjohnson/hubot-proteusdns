@@ -7,9 +7,10 @@
 #   proteusdns
 #
 # Configuration:
-#   HUBOT_PROTEUSDNS_URL [required] - url (e.g. https://proteus.example.com)
-#   HUBOT_PROTEUSDNS_USER [required] - api user
-#   HUBOT_PROTEUSDNS_PASS [required] - api pass
+#   HUBOT_BCPROTAPI_HOST [required] - url (e.g. proteus.example.com)
+#   HUBOT_BCPROTAPI_USER [required] - api user
+#   HUBOT_BCPROTAPI_PASS [required] - api pass
+#   HUBOT_BCPROTAPI_SSL [optional] - use ssl
 #
 # Commands:
 #   hubot pdns help - proteus dns commands
@@ -19,7 +20,7 @@
 # Author:
 #   gfjohnson
 
-BCProtAPI = require 'bcprotapi'
+papi = require 'bcprotapi'
 
 moduledesc = 'ProteusDNS'
 modulename = 'pdns'
@@ -29,23 +30,35 @@ config =
   username: 'example'
   password: 'example'
   ssl: false
+  keepalives: true
+  interation: 0
 
-config.ssl = true if process.env.HUBOT_PROTEUSDNS_SSL
-config.host = process.env.HUBOT_PROTEUSDNS_HOST if process.env.HUBOT_PROTEUSDNS_HOST
-config.username = process.env.HUBOT_PROTEUSDNS_USER if process.env.HUBOT_PROTEUSDNS_USER
-config.password = process.env.HUBOT_PROTEUSDNS_PASS if process.env.HUBOT_PROTEUSDNS_PASS
+config.ssl = true if process.env.HUBOT_BCPROTAPI_SSL
+config.host = process.env.HUBOT_BCPROTAPI_HOST if process.env.HUBOT_BCPROTAPI_HOST
+config.username = process.env.HUBOT_BCPROTAPI_USER if process.env.HUBOT_BCPROTAPI_USER
+config.password = process.env.HUBOT_BCPROTAPI_PASS if process.env.HUBOT_BCPROTAPI_PASS
 
 unless config.username == "example"
-  papi = new BCProtAPI config
+  papi.connect config
 
 searchByObjectTypes = (robot, msg, keyword) ->
 
   # robot.logger.info "searchByObjectTypes: sending request for #{keyword}"
   papi.searchByObjectTypes keyword, (err, res) ->
     if err
+      if config.iteration < 1 and err is 'Error: env:Server: Not logged in'
+        msgout = "#{moduledesc}: connection timeout, attempting reconnect"
+        robot.logger.info "#{msgout} [#{msg.envelope.user.name}]"
+        robot.send {room: msg.envelope.user.name}, msgout
+        papi.connect config, (err, res) ->
+          config.iteration += 1
+          return searchByObjectTypes robot, msg, keyword
+        return
       msgout = "#{moduledesc}: error"
       robot.logger.info "#{msgout} (#{err}) [#{msg.envelope.user.name}]"
       return robot.send {room: msg.envelope.user.name}, "#{msgout}, check hubot log for details"
+
+    config.iteration = 0
 
     if res is null
       msgout = "#{moduledesc}: no results for `#{keyword}`"
